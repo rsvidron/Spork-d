@@ -40,10 +40,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_frontend_url = os.environ.get("FRONTEND_URL", "https://sporkd-production.up.railway.app")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[_frontend_url, "http://localhost:3000"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
