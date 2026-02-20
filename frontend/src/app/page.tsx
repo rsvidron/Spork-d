@@ -23,7 +23,8 @@ export default function HomePage() {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => toast.error("Couldn't get location. Try searching by city or zip.")
+      () => toast.error("Couldn't get location. Try searching by city or zip."),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, []);
 

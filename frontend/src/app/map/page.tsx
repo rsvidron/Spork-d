@@ -40,7 +40,8 @@ export default function MapPage() {
   const requestLocation = useCallback(() => {
     navigator.geolocation?.getCurrentPosition(
       (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {}
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, []);
 
