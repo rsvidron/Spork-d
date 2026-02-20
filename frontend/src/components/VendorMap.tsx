@@ -23,6 +23,8 @@ export default function VendorMap({ vendors, center, selectedVendor, onVendorSel
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<number, mapboxgl.Marker>>(new Map());
   const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const hoverPopupRef = useRef<mapboxgl.Popup | null>(null);
+  const pinnedVendorRef = useRef<number | null>(null);
 
   // Init map
   useEffect(() => {
@@ -86,32 +88,58 @@ export default function VendorMap({ vendors, center, selectedVendor, onVendorSel
         </div>
       `;
 
+      const buildPopupHTML = (pinned: boolean) => `
+        <div class="p-3 min-w-[220px]">
+          ${vendor.cover_photo_url ? `<img src="${vendor.cover_photo_url}" class="w-full h-24 object-cover rounded-lg mb-2" alt="${vendor.name}" />` : ""}
+          <h3 class="font-bold text-gray-900 text-sm leading-tight">${vendor.name}</h3>
+          <p class="text-xs text-gray-500 mt-0.5">${[vendor.address, vendor.city, vendor.state].filter(Boolean).join(", ")}</p>
+          ${vendor.open_status_label ? `<p class="text-xs mt-1 font-medium ${vendor.is_open ? "text-green-600" : "text-gray-400"}">${vendor.open_status_label}</p>` : ""}
+          ${vendor.average_rating > 0 ? `<div class="flex items-center gap-1 mt-1">
+            <span class="text-yellow-400 text-xs">★</span>
+            <span class="text-xs font-semibold">${vendor.average_rating.toFixed(1)}</span>
+            <span class="text-xs text-gray-400">(${vendor.review_count})</span>
+          </div>` : ""}
+          ${pinned ? `<a href="/vendor/${vendor.slug}" class="mt-2 block text-center text-xs font-semibold text-white bg-orange-500 rounded-lg py-1.5 hover:bg-orange-600 transition-colors">View details →</a>` : `<p class="text-xs text-gray-400 mt-1.5 italic">Click to pin &amp; view details</p>`}
+        </div>
+      `;
+
+      // Hover: show lightweight tooltip
+      el.addEventListener("mouseenter", () => {
+        if (pinnedVendorRef.current === vendor.id) return;
+        hoverPopupRef.current?.remove();
+        hoverPopupRef.current = new mapboxgl.Popup({ offset: 25, maxWidth: "260px", closeButton: false, closeOnClick: false })
+          .setLngLat([vendor.longitude!, vendor.latitude!])
+          .setHTML(buildPopupHTML(false))
+          .addTo(map);
+      });
+
+      el.addEventListener("mouseleave", () => {
+        if (pinnedVendorRef.current === vendor.id) return;
+        hoverPopupRef.current?.remove();
+        hoverPopupRef.current = null;
+      });
+
+      // Click: pin the full popup with "View details" link
       el.addEventListener("click", () => {
         onVendorSelect?.(vendor);
+        hoverPopupRef.current?.remove();
+        hoverPopupRef.current = null;
 
-        // Popup content
+        if (pinnedVendorRef.current === vendor.id) {
+          // Second click toggles off
+          popupRef.current?.remove();
+          popupRef.current = null;
+          pinnedVendorRef.current = null;
+          return;
+        }
+
+        pinnedVendorRef.current = vendor.id;
         popupRef.current?.remove();
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "280px", closeButton: false })
+        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "260px", closeButton: true })
           .setLngLat([vendor.longitude!, vendor.latitude!])
-          .setHTML(`
-            <div class="p-3 min-w-[240px]">
-              ${vendor.cover_photo_url ? `<img src="${vendor.cover_photo_url}" class="w-full h-28 object-cover rounded-xl mb-3" alt="${vendor.name}" />` : ""}
-              <h3 class="font-bold text-gray-900 text-sm">${vendor.name}</h3>
-              <p class="text-xs text-gray-500 mt-0.5">${[vendor.city, vendor.state].filter(Boolean).join(", ")}</p>
-              ${vendor.open_status_label ? `<p class="text-xs mt-1 font-medium ${vendor.is_open ? "text-green-600" : "text-gray-500"}">
-                ${vendor.open_status_label}
-              </p>` : ""}
-              ${vendor.average_rating > 0 ? `<div class="flex items-center gap-1 mt-1.5">
-                <span class="text-yellow-400 text-xs">★</span>
-                <span class="text-xs font-semibold">${vendor.average_rating.toFixed(1)}</span>
-                <span class="text-xs text-gray-400">(${vendor.review_count})</span>
-              </div>` : ""}
-              <a href="/vendor/${vendor.slug}" class="mt-2 block text-center text-xs font-semibold text-white bg-orange-500 rounded-lg py-1.5 hover:bg-orange-600 transition-colors">
-                View details →
-              </a>
-            </div>
-          `)
+          .setHTML(buildPopupHTML(true))
           .addTo(map);
+        popup.on("close", () => { pinnedVendorRef.current = null; });
         popupRef.current = popup;
       });
 
