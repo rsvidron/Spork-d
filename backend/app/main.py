@@ -1,3 +1,18 @@
+import os
+import sys
+
+# Print all env vars at startup so we can see what Railway is injecting
+print("=== STARTUP ENV DEBUG ===", flush=True)
+for key in ["PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE", "DATABASE_URL", "PORT"]:
+    val = os.environ.get(key)
+    if val:
+        # Mask password but confirm it's present
+        masked = val if key not in ("PGPASSWORD",) else "***set***"
+        print(f"  {key} = {masked}", flush=True)
+    else:
+        print(f"  {key} = NOT SET", flush=True)
+print("=========================", flush=True)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -8,9 +23,13 @@ from app.api import auth, vendors, hours, reviews, favorites, admin
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables after the event loop starts, not at import time.
-    # Prevents crash if DB connection isn't ready during module load.
-    Base.metadata.create_all(bind=engine)
+    print(f"[lifespan] Connecting with URL: {settings.get_database_url()[:40]}...", flush=True)
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("[lifespan] DB tables created/verified OK", flush=True)
+    except Exception as e:
+        print(f"[lifespan] DB ERROR: {e}", flush=True)
+        # Don't crash — let the healthcheck fail gracefully so logs are visible
     yield
 
 
@@ -21,8 +40,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# allow_origins=["*"] so Railway frontend URLs work without needing
-# FRONTEND_URL configured upfront.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,7 +48,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Routers
 app.include_router(auth.router)
 app.include_router(vendors.router)
 app.include_router(hours.router)
@@ -47,7 +63,4 @@ def health():
 
 @app.get("/api/config/map")
 def map_config():
-    """Return public map config to the frontend."""
-    return {
-        "mapbox_token": settings.MAPBOX_TOKEN,
-    }
+    return {"mapbox_token": settings.MAPBOX_TOKEN}
