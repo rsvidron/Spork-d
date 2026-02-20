@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Menu, X, MapPin, Heart, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import clsx from "clsx";
@@ -11,6 +11,8 @@ export function Navbar() {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const handleLogout = () => {
     logout();
@@ -34,17 +36,17 @@ export function Navbar() {
           <Link href="/map" className="hover:text-brand-500 transition-colors flex items-center gap-1.5">
             <MapPin className="w-4 h-4" /> Map
           </Link>
-          {user && (
+          {mounted && user && (
             <Link href="/favorites" className="hover:text-brand-500 transition-colors flex items-center gap-1.5">
               <Heart className="w-4 h-4" /> Favorites
             </Link>
           )}
-          {isVendor() && (
+          {mounted && isVendor() && (
             <Link href="/vendor/dashboard" className="hover:text-brand-500 transition-colors flex items-center gap-1.5">
               <Settings className="w-4 h-4" /> Dashboard
             </Link>
           )}
-          {isAdmin() && (
+          {mounted && isAdmin() && (
             <Link href="/admin" className="hover:text-brand-500 transition-colors text-brand-500 font-semibold">
               Admin
             </Link>
@@ -53,7 +55,7 @@ export function Navbar() {
 
         {/* Auth area */}
         <div className="flex items-center gap-3">
-          {user ? (
+          {mounted && user ? (
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -119,25 +121,25 @@ export function Navbar() {
               className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
               <MapPin className="w-4 h-4 text-brand-500" /> Map View
             </Link>
-            {user && (
+            {mounted && user && (
               <Link href="/favorites" onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
                 <Heart className="w-4 h-4 text-brand-500" /> My Favorites
               </Link>
             )}
-            {isVendor() && (
+            {mounted && isVendor() && (
               <Link href="/vendor/dashboard" onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50">
                 <Settings className="w-4 h-4 text-brand-500" /> Vendor Dashboard
               </Link>
             )}
-            {isAdmin() && (
+            {mounted && isAdmin() && (
               <Link href="/admin" onClick={() => setMenuOpen(false)}
                 className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold text-brand-500 hover:bg-orange-50">
                 <Settings className="w-4 h-4" /> Admin Panel
               </Link>
             )}
-            {!user && (
+            {mounted && !user && (
               <div className="flex gap-2 pt-2">
                 <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="btn-secondary flex-1 text-sm">Sign in</Link>
                 <Link href="/auth/register" onClick={() => setMenuOpen(false)} className="btn-primary flex-1 text-sm">Join free</Link>

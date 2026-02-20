@@ -78,6 +78,7 @@ export default function VendorMap({ vendors, center, selectedVendor, onVendorSel
 
       const el = document.createElement("div");
       el.className = "vendor-marker cursor-pointer select-none transition-transform hover:scale-110";
+      el.style.pointerEvents = "auto";
       el.innerHTML = `
         <div class="relative">
           <div class="w-10 h-10 rounded-full border-2 ${vendor.is_open ? "border-green-500 bg-white" : "border-gray-300 bg-gray-100"}
