@@ -67,7 +67,7 @@ function ReviewCard({ review, vendorId, currentUserId, onDelete }: {
           </div>
           <div>
             <p className="font-semibold text-gray-900 text-sm">{review.username}</p>
-            <p className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+            <p suppressHydrationWarning className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -99,8 +99,13 @@ export default function VendorPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [showUserTz, setShowUserTz] = useState(false);
+  const [userTz, setUserTz] = useState("America/New_York");
+  const [todayDow, setTodayDow] = useState<number | null>(null);
 
-  const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  useEffect(() => {
+    setUserTz(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    setTodayDow(new Date().getDay());
+  }, []);
 
   const { data: vendor, isLoading } = useQuery<VendorDetail>(
     ["vendor", slug],
@@ -407,7 +412,7 @@ export default function VendorPage() {
               {vendor.weekly_schedule ? (
                 <div className="space-y-1.5">
                   {vendor.weekly_schedule.map((day) => {
-                    const isToday = new Date().getDay() === (day.dow + 1) % 7;
+                    const isToday = todayDow !== null && todayDow === (day.dow + 1) % 7;
                     return (
                       <div key={day.dow} className={clsx(
                         "flex items-start justify-between py-1.5 px-2 rounded-lg text-sm",
@@ -472,7 +477,7 @@ export default function VendorPage() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-gray-500">Member since</dt>
-                  <dd className="font-medium text-gray-900">
+                  <dd suppressHydrationWarning className="font-medium text-gray-900">
                     {new Date(vendor.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                   </dd>
                 </div>

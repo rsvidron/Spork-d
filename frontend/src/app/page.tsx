@@ -207,7 +207,7 @@ export default function HomePage() {
             <Link href="/auth/register" className="hover:text-brand-500 transition-colors">Join free</Link>
             <Link href="/vendor/dashboard" className="hover:text-brand-500 transition-colors">For Vendors</Link>
           </div>
-          <p>© {new Date().getFullYear()} Spork'd. Discover local, eat local.</p>
+          <p suppressHydrationWarning>© {new Date().getFullYear()} Spork&apos;d. Discover local, eat local.</p>
         </div>
       </footer>
     </div>
