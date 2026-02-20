@@ -68,7 +68,6 @@ def search_vendors(
     limit: int = Query(default=30, le=100),
     offset: int = 0,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = None,
 ):
     query = db.query(Vendor).filter(Vendor.status == VendorStatus.active)
 
