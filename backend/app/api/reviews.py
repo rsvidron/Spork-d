@@ -7,7 +7,7 @@ from app.models.review import Review, ReviewFlag
 from app.models.vendor import Vendor
 from app.models.user import User, UserRole
 from app.schemas.review import ReviewCreate, ReviewRead, ReviewUpdate
-from app.utils.auth import get_current_user
+from app.utils.auth import get_current_user, get_current_user_optional
 
 router = APIRouter(prefix="/api/vendors/{vendor_id}/reviews", tags=["reviews"])
 
@@ -34,7 +34,7 @@ def get_reviews(
     limit: int = Query(default=20, le=100),
     offset: int = 0,
     db: Session = Depends(get_db),
-    current_user: Optional[User] = None,
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     query = db.query(Review).filter(Review.vendor_id == vendor_id)
     # Admins see hidden reviews too
