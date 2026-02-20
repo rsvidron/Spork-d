@@ -24,6 +24,17 @@ export default function MapPage() {
   const [selectedVendor, setSelectedVendor] = useState<VendorSummary | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("split");
   const [loading, setLoading] = useState(false);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Scroll selected vendor card into view when selection comes from map
+  useEffect(() => {
+    if (!selectedVendor) return;
+    const el = cardRefs.current.get(selectedVendor.id);
+    if (el && sidebarRef.current) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [selectedVendor]);
 
   const fetchVendors = useCallback(async (f: SearchFilters, loc: typeof location) => {
     setLoading(true);
@@ -74,7 +85,7 @@ export default function MapPage() {
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Vendor list sidebar */}
-        <div className={clsx(
+        <div ref={sidebarRef} className={clsx(
           "overflow-y-auto bg-surface-muted border-r border-gray-200 flex flex-col",
           viewMode === "list" ? "flex-1" : viewMode === "map" ? "hidden" : "hidden md:flex w-[380px] shrink-0"
         )}>
@@ -86,8 +97,9 @@ export default function MapPage() {
             {vendors.map((v) => (
               <div
                 key={v.id}
+                ref={(el) => { if (el) cardRefs.current.set(v.id, el); else cardRefs.current.delete(v.id); }}
                 className={clsx("cursor-pointer rounded-2xl overflow-hidden transition-all",
-                  selectedVendor?.id === v.id ? "ring-2 ring-brand-500" : ""
+                  selectedVendor?.id === v.id ? "ring-2 ring-brand-500 shadow-md" : ""
                 )}
                 onClick={() => setSelectedVendor(v)}
               >
