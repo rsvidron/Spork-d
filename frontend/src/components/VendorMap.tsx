@@ -93,7 +93,7 @@ export default function VendorMap({ vendors, center, selectedVendor, onVendorSel
         <div class="p-3 min-w-[220px]">
           ${vendor.cover_photo_url ? `<img src="${vendor.cover_photo_url}" class="w-full h-24 object-cover rounded-lg mb-2" alt="${vendor.name}" />` : ""}
           <h3 class="font-bold text-gray-900 text-sm leading-tight">${vendor.name}</h3>
-          <p class="text-xs text-gray-500 mt-0.5">${[vendor.address, vendor.city, vendor.state].filter(Boolean).join(", ")}</p>
+          <p class="text-xs text-gray-500 mt-0.5">${[vendor.city, vendor.state].filter(Boolean).join(", ")}</p>
           ${vendor.open_status_label ? `<p class="text-xs mt-1 font-medium ${vendor.is_open ? "text-green-600" : "text-gray-400"}">${vendor.open_status_label}</p>` : ""}
           ${vendor.average_rating > 0 ? `<div class="flex items-center gap-1 mt-1">
             <span class="text-yellow-400 text-xs">★</span>
